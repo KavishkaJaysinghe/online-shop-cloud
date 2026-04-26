@@ -43,3 +43,4 @@ Tech Stack: Node.js, Express, MongoDB, Docker, RabbitMQ, Mocha, Chai
 - The internal service of each microservice does not follow pure dependency injection advocated in Clean Architecture. The internal file structures and flow of dependencies are loosely based on Clean Architecture and the code does not fully utilise dependency injection principles. While I did try to minimise interdependencies, I found it a bit overkill to follow Clean Architecture fully for what is essentially a take-home project. But it is worth trying eventually.
 - I'd like to write a series of Bash scripts with various `curl` commands to automate API testing and follow them in sequence of particular use-cases (e.g. user publishes product -> another user logs in -> other user buys product -> ...)<br>
 - It could be a good exercise to deploy the databases across different platforms (e.g. Firebase, SQL, etc.) to prevent a single point of failure
+test
