@@ -1,0 +1,1 @@
+{"name":"cloudshop-online-shop-cloud","version":"1.0.0","private":true,"scripts":{"start":"docker compose up --build","demo":"./scripts/demo-requests.sh"}}

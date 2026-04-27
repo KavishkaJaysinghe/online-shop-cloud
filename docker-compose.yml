@@ -1,0 +1,89 @@
+version: "3.8"
+
+services:
+  mongo-auth:
+    image: mongo:7
+    volumes: ["mongo-auth-data:/data/db"]
+    networks: [ecommerce]
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo-product:
+    image: mongo:7
+    volumes: ["mongo-product-data:/data/db"]
+    networks: [ecommerce]
+
+  mongo-order:
+    image: mongo:7
+    volumes: ["mongo-order-data:/data/db"]
+    networks: [ecommerce]
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports: ["5672:5672", "15672:15672"]
+    volumes: ["rabbitmq-data:/var/lib/rabbitmq"]
+    networks: [ecommerce]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth:
+    build: ./auth
+    environment:
+      PORT: 3000
+      MONGODB_AUTH_URI: mongodb://mongo-auth:27017/auth
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-before-production}
+    depends_on: [mongo-auth]
+    networks: [ecommerce]
+    deploy:
+      replicas: 2
+
+  product:
+    build: ./product
+    environment:
+      PORT: 3001
+      MONGODB_PRODUCT_URI: mongodb://mongo-product:27017/products
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-before-production}
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    depends_on: [mongo-product, rabbitmq]
+    networks: [ecommerce]
+    deploy:
+      replicas: 2
+
+  order:
+    build: ./order
+    environment:
+      PORT: 3002
+      MONGODB_ORDER_URI: mongodb://mongo-order:27017/orders
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-before-production}
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    depends_on: [mongo-order, rabbitmq]
+    networks: [ecommerce]
+    deploy:
+      replicas: 2
+
+  api-gateway:
+    build: ./api-gateway
+    ports: ["3003:3003"]
+    environment:
+      PORT: 3003
+      AUTH_URL: http://auth:3000
+      PRODUCT_URL: http://product:3001
+      ORDER_URL: http://order:3002
+    depends_on: [auth, product, order]
+    networks: [ecommerce]
+
+networks:
+  ecommerce:
+    driver: bridge
+
+volumes:
+  mongo-auth-data:
+  mongo-product-data:
+  mongo-order-data:
+  rabbitmq-data:

@@ -1,0 +1,11 @@
+const express = require('express');
+const ProductController = require('../controllers/productController');
+const isAuthenticated = require('../utils/isAuthenticated');
+const router = express.Router();
+const productController = new ProductController();
+router.get('/health', (req, res) => res.json({ service: 'product', status: 'ok' }));
+router.post('/', isAuthenticated, (req,res)=>productController.createProduct(req,res));
+router.get('/', isAuthenticated, (req,res)=>productController.getProducts(req,res));
+router.post('/buy', isAuthenticated, (req,res)=>productController.createOrder(req,res));
+router.get('/orders/:orderId', isAuthenticated, (req,res)=>productController.getOrderStatus(req,res));
+module.exports = router;

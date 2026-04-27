@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CloudShop Demo</title>
+  <style>
+    body{font-family:Arial, sans-serif; max-width:1000px; margin:30px auto; padding:0 16px; background:#f7f7fb} .card{background:white;padding:18px;border-radius:14px;box-shadow:0 4px 16px #0001;margin:14px 0} input,button,textarea{padding:10px;margin:5px;border-radius:8px;border:1px solid #ccc} button{background:#111827;color:white;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px} pre{background:#111827;color:#d1fae5;padding:12px;border-radius:10px;overflow:auto}
+  </style>
+</head>
+<body>
+  <h1>CloudShop - Online Shop Cloud Application</h1>
+  <p>Microservices demo with JWT security, MongoDB, RabbitMQ async orders, Docker deployment and scalable services.</p>
+  <div class="grid">
+    <div class="card"><h2>1. Register / Login</h2><input id="u" placeholder="username" value="student"><input id="p" placeholder="password" value="Password123" type="password"><button onclick="register()">Register</button><button onclick="login()">Login</button></div>
+    <div class="card"><h2>2. Add Product</h2><input id="n" placeholder="name" value="Wireless Earbuds"><input id="price" type="number" placeholder="price" value="7500"><textarea id="d">Bluetooth earbuds with charging case</textarea><button onclick="addProduct()">Add Product</button></div>
+    <div class="card"><h2>3. Products & Order</h2><button onclick="listProducts()">Load Products</button><button onclick="buySelected()">Buy Selected</button><div id="products"></div></div>
+  </div>
+  <div class="card"><h2>Output</h2><pre id="out">Ready</pre></div>
+<script>
+let token=''; let products=[];
+const out=x=>document.getElementById('out').textContent=typeof x==='string'?x:JSON.stringify(x,null,2);
+async function api(path, opts={}){opts.headers={...(opts.headers||{}),'Content-Type':'application/json'}; if(token) opts.headers.Authorization='Bearer '+token; const r=await fetch(path,opts); const j=await r.json().catch(()=>({})); if(!r.ok) throw j; return j;}
+async function register(){try{out(await api('/auth/register',{method:'POST',body:JSON.stringify({username:u.value,password:p.value})}))}catch(e){out(e)}}
+async function login(){try{const r=await api('/auth/login',{method:'POST',body:JSON.stringify({username:u.value,password:p.value})}); token=r.token; out({message:'Logged in', token})}catch(e){out(e)}}
+async function addProduct(){try{out(await api('/products',{method:'POST',body:JSON.stringify({name:n.value,price:Number(price.value),description:d.value})}))}catch(e){out(e)}}
+async function listProducts(){try{products=await api('/products'); document.getElementById('products').innerHTML=products.map(p=>`<label><input type='checkbox' value='${p._id}'> ${p.name} - Rs.${p.price}</label><br>`).join(''); out(products)}catch(e){out(e)}}
+async function buySelected(){try{const ids=[...document.querySelectorAll('#products input:checked')].map(x=>x.value); out(await api('/products/buy',{method:'POST',body:JSON.stringify({ids})}))}catch(e){out(e)}}
+</script>
+</body></html>
