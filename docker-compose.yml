@@ -57,5 +57,12 @@ services:
     networks:
       - ecommerce
 
+  frontend:
+    build: ./frontend
+    ports:
+      - "3004:80"
+    networks:
+      - ecommerce
+
 networks:
   ecommerce:
