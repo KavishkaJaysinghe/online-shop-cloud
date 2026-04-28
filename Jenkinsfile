@@ -19,42 +19,38 @@ pipeline {
         stage('Build & Push to Azure') {
             steps {
                 script {
-                    // List of service folders to process
                     def services = ['auth', 'order', 'product', 'api-gateway']
                     
-                    // Log in to Azure using the stored credentials
                     withCredentials([usernamePassword(credentialsId: "${AZURE_CRED_ID}", passwordVariable: 'ACR_PASS', usernameVariable: 'ACR_USER')]) {
-                        
-                        // Docker login via CLI
                         sh "echo ${ACR_PASS} | docker login ${ACR_URL} -u ${ACR_USER} --password-stdin"
                         
                         for (s in services) {
-                            // Detect if there are changes in the specific service folder
-                            // This compares the current commit with the previous one
-                            def changeInFolder = sh(script: "git diff --quiet HEAD~1 HEAD -- ${s} || echo 'changed'", returnStatus: false).trim()
-                            
-                            if (changeInFolder == 'changed') {
-                                echo "-------------------------------------------"
-                                echo "Changes detected in: ${s}. Starting build..."
-                                echo "-------------------------------------------"
+                            // 1. Folder එක තියෙනවාද කියලා මුලින්ම බලනවා (Safety check)
+                            if (fileExists(s)) {
+                                // 2. git diff හරහා වෙනසක් වෙලාද කියලා බලනවා
+                                // statusCode 0 නම් වෙනසක් නැහැ, වෙනත් අංකයක් නම් වෙනසක් වෙලා තියෙනවා
+                                def statusCode = sh(script: "git diff --quiet HEAD~1 HEAD -- ${s}", returnStatus: true)
                                 
-                                // 1. Build the Docker Image using the Dockerfile inside the service folder
-                                sh "docker build -t ${ACR_URL}/${s}:latest ./${s}"
-                                
-                                // 2. Push the newly built image to Azure ACR
-                                sh "docker push ${ACR_URL}/${s}:latest"
-                                
-                                echo "Successfully pushed ${s} to Azure ACR!"
+                                if (statusCode != 0) { 
+                                    echo "-------------------------------------------"
+                                    echo "Changes detected in: ${s}. Starting build..."
+                                    echo "-------------------------------------------"
+                                    
+                                    sh "docker build -t ${ACR_URL}/${s}:latest ./${s}"
+                                    sh "docker push ${ACR_URL}/${s}:latest"
+                                    
+                                    echo "Successfully pushed ${s} to Azure ACR!"
+                                } else {
+                                    echo "No changes detected in ${s}. Skipping build."
+                                }
                             } else {
-                                // If no changes were found in that folder, skip the build to save time
-                                echo "No changes detected in ${s}. Skipping build."
+                                echo "Folder ${s} not found, skipping..."
                             }
                         }
                     }
                 }
             }
         }
-    }
 
     post {
         success { 
