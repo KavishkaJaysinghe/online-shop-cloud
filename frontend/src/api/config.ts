@@ -7,6 +7,6 @@ const BASE_GATEWAY = import.meta.env.VITE_API_GATEWAY_URL || "https://api-gatewa
 
 export const API_CONFIG = {
   AUTH_SERVICE: `${BASE_GATEWAY}/auth`,
-  PRODUCT_SERVICE: `${BASE_GATEWAY}/products/api`,
+  PRODUCT_SERVICE: `${BASE_GATEWAY}/products/api/products`,
   ORDER_SERVICE: `${BASE_GATEWAY}/orders`,
 };

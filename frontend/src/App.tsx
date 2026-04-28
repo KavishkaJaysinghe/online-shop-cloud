@@ -4,6 +4,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Cart from './pages/Cart';
+import AddProduct from './pages/AddProduct';
+import Dashboard from './pages/Dashboard';
 import { useAuth } from './contexts/AuthContext';
 
 function App() {
@@ -18,6 +20,8 @@ function App() {
           <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
           <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/" />} />
           <Route path="/cart" element={isAuthenticated ? <Cart /> : <Navigate to="/login" />} />
+          <Route path="/add-product" element={isAuthenticated ? <AddProduct /> : <Navigate to="/login" />} />
+          <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
         </Routes>
       </main>
     </div>

@@ -15,7 +15,7 @@ const Home = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${API_CONFIG.PRODUCT_SERVICE}/products`, {
+        const response = await axios.get(API_CONFIG.PRODUCT_SERVICE, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setProducts(response.data);

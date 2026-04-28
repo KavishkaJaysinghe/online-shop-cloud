@@ -16,14 +16,6 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    // Password bypass for development/testing
-    if (username === 'thisisuser' && password === 'thisispass') {
-      login('bypass-token-123', username);
-      navigate('/');
-      return;
-    }
-
     setIsLoading(true);
 
     try {

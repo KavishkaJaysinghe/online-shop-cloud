@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, LogOut, User, Store } from 'lucide-react';
+import { ShoppingCart, LogOut, User, Store, PlusCircle, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 
@@ -18,6 +18,12 @@ const Navbar = () => {
         <div className="flex items-center gap-6">
           {isAuthenticated ? (
             <>
+              <Link to="/dashboard" className="p-2 text-slate-600 hover:text-primary-600 transition-colors" title="Dashboard">
+                <LayoutDashboard className="w-6 h-6" />
+              </Link>
+              <Link to="/add-product" className="p-2 text-slate-600 hover:text-primary-600 transition-colors" title="Add Product">
+                <PlusCircle className="w-6 h-6" />
+              </Link>
               <Link to="/cart" className="relative p-2 text-slate-600 hover:text-primary-600 transition-colors">
                 <ShoppingCart className="w-6 h-6" />
                 {totalItems > 0 && (

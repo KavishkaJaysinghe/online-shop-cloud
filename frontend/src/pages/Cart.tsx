@@ -18,7 +18,7 @@ const Cart = () => {
     
     try {
       const productIds = items.map(item => item._id);
-      await axios.post(`${API_CONFIG.PRODUCT_SERVICE}/products/buy`, 
+      await axios.post(`${API_CONFIG.PRODUCT_SERVICE}/buy`, 
         { ids: productIds },
         { headers: { Authorization: `Bearer ${token}` } }
       );
