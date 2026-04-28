@@ -38,16 +38,24 @@ app.use("/auth", (req, res) => {
     });
 });
 
-// Route requests to the Product Service changes
+// --- PRODUCT SERVICE ---
 app.use("/products", (req, res) => {
-    req.url = req.url.replace(/^\//, '');
-    proxy.web(req, res, { target: "http://product-services" });
+    // Strips '/products' from the incoming URL
+    req.url = req.url.replace(/^\/products/, ''); 
+    console.log(`Proxying Products: ${req.url}`);
+    
+    // Ensure "product-service" matches your Azure Container App name
+    proxy.web(req, res, { target: "http://product-service", changeOrigin: true });
 });
 
-// Route requests to the Order Service
+// --- ORDER SERVICE ---
 app.use("/orders", (req, res) => {
-    req.url = req.url.replace(/^\//, '');
-    proxy.web(req, res, { target: "http://order-services" });
+    // Strips '/orders' from the incoming URL
+    req.url = req.url.replace(/^\/orders/, '');
+    console.log(`Proxying Orders: ${req.url}`);
+    
+    // Ensure "order-service" matches your Azure Container App name
+    proxy.web(req, res, { target: "http://order-service", changeOrigin: true });
 });
 
 // Use port 3003 (matching your local/compose setup)
