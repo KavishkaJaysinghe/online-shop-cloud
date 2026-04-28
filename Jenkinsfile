@@ -2,16 +2,16 @@ pipeline {
     agent any
 
     environment {
-        // ඔබේ Azure Container Registry එකේ URL එක
+        // Your Azure Container Registry URL
         ACR_URL = "ruhunaecommerceacr.azurecr.io"
-        // අපි කලින් Jenkins වල හැදූ Global Credential ID එක
+        // The Global Credential ID created in Jenkins
         AZURE_CRED_ID = "azure-registry-credentials"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                // GitHub එකෙන් code එක ලබා ගැනීම
+                // Retrieve the latest code from the GitHub repository
                 checkout scm
             }
         }
@@ -19,27 +19,36 @@ pipeline {
         stage('Build & Push to Azure') {
             steps {
                 script {
-                    // ඔබේ folder වල නම් මේ ලැයිස්තුවට ඇතුළත් කරන්න
-                    def services = ['auth', 'order', 'product']
+                    // List of service folders to process
+                    def services = ['auth', 'order', 'product', 'api-gateway']
                     
-                    // Azure credentials භාවිතයෙන් login වීම
+                    // Log in to Azure using the stored credentials
                     withCredentials([usernamePassword(credentialsId: "${AZURE_CRED_ID}", passwordVariable: 'ACR_PASS', usernameVariable: 'ACR_USER')]) {
                         
-                        // Docker CLI හරහා Azure එකට login වීම
+                        // Docker login via CLI
                         sh "echo ${ACR_PASS} | docker login ${ACR_URL} -u ${ACR_USER} --password-stdin"
                         
                         for (s in services) {
-                            echo "-------------------------------------------"
-                            echo "Processing Service: ${s}"
-                            echo "-------------------------------------------"
+                            // Detect if there are changes in the specific service folder
+                            // This compares the current commit with the previous one
+                            def changeInFolder = sh(script: "git diff --quiet HEAD~1 HEAD -- ${s} || echo 'changed'", returnStatus: false).trim()
                             
-                            // 1. Image එක Build කිරීම (Folder එක තුළ ඇති Dockerfile එක සොයයි)
-                            sh "docker build -t ${ACR_URL}/${s}:latest ./${s}"
-                            
-                            // 2. Image එක Azure ACR එකට Push කිරීම
-                            sh "docker push ${ACR_URL}/${s}:latest"
-                            
-                            echo "Successfully pushed ${s} to Azure!"
+                            if (changeInFolder == 'changed') {
+                                echo "-------------------------------------------"
+                                echo "Changes detected in: ${s}. Starting build..."
+                                echo "-------------------------------------------"
+                                
+                                // 1. Build the Docker Image using the Dockerfile inside the service folder
+                                sh "docker build -t ${ACR_URL}/${s}:latest ./${s}"
+                                
+                                // 2. Push the newly built image to Azure ACR
+                                sh "docker push ${ACR_URL}/${s}:latest"
+                                
+                                echo "Successfully pushed ${s} to Azure ACR!"
+                            } else {
+                                // If no changes were found in that folder, skip the build to save time
+                                echo "No changes detected in ${s}. Skipping build."
+                            }
                         }
                     }
                 }
@@ -48,15 +57,15 @@ pipeline {
     }
 
     post {
-        success {
-            echo 'Build and Push process completed successfully!'
+        success { 
+            echo 'Pipeline finished successfully!' 
         }
-        failure {
-            echo 'Pipeline failed. Please check the console output for errors.'
+        failure { 
+            echo 'Pipeline failed! Please check the console log for details.' 
         }
-        always {
-            // Local එකේ හැදුණු images අයින් කර space ඉතිරි කිරීම
-            sh "docker image prune -f"
+        always { 
+            // Clean up unused local images to save disk space on the Jenkins server
+            sh "docker image prune -f" 
         }
     }
 }
