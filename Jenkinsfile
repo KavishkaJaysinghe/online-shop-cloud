@@ -22,13 +22,14 @@ pipeline {
                     def services = ['auth', 'order', 'product', 'api-gateway']
                     
                     withCredentials([usernamePassword(credentialsId: "${AZURE_CRED_ID}", passwordVariable: 'ACR_PASS', usernameVariable: 'ACR_USER')]) {
+                        // Log in to ACR
                         sh "echo ${ACR_PASS} | docker login ${ACR_URL} -u ${ACR_USER} --password-stdin"
                         
                         for (s in services) {
-                            // 1. Folder එක තියෙනවාද කියලා මුලින්ම බලනවා (Safety check)
+                            // 1. Safety check to see if the folder exists
                             if (fileExists(s)) {
-                                // 2. git diff හරහා වෙනසක් වෙලාද කියලා බලනවා
-                                // statusCode 0 නම් වෙනසක් නැහැ, වෙනත් අංකයක් නම් වෙනසක් වෙලා තියෙනවා
+                                // 2. Check for changes between current and previous commit
+                                // Note: On the very first run, if HEAD~1 fails, build all services manually once.
                                 def statusCode = sh(script: "git diff --quiet HEAD~1 HEAD -- ${s}", returnStatus: true)
                                 
                                 if (statusCode != 0) { 
@@ -51,6 +52,7 @@ pipeline {
                 }
             }
         }
+    }
 
     post {
         success { 
@@ -60,7 +62,7 @@ pipeline {
             echo 'Pipeline failed! Please check the console log for details.' 
         }
         always { 
-            // Clean up unused local images to save disk space on the Jenkins server
+            // Clean up unused local images to save disk space on Jenkins agent
             sh "docker image prune -f" 
         }
     }
