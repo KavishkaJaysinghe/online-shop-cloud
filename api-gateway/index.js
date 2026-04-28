@@ -48,10 +48,10 @@ app.use("/products", (req, res) => {
     // Rewrite: /products/all -> /all
     req.url = req.url.replace(/^\/products/, '');
     
-    console.log(`Proxying Products: ${oldPath} -> http://product-service${req.url}`);
+    console.log(`Proxying Products: ${oldPath} -> http://product-services${req.url}`);
 
     proxy.web(req, res, { 
-        target: "http://product-service", 
+        target: "http://product-services", 
         changeOrigin: true 
     }, (err) => {
         if (!res.headersSent) {
@@ -69,10 +69,10 @@ app.use("/orders", (req, res) => {
     // Rewrite: /orders/list -> /list
     req.url = req.url.replace(/^\/orders/, '');
     
-    console.log(`Proxying Orders: ${oldPath} -> http://order-service${req.url}`);
+    console.log(`Proxying Orders: ${oldPath} -> http://order-services${req.url}`);
 
     proxy.web(req, res, { 
-        target: "http://order-service", 
+        target: "http://order-services", 
         changeOrigin: true 
     }, (err) => {
         if (!res.headersSent) {
@@ -90,7 +90,7 @@ app.listen(port, () => {
     console.log(`-----------------------------------------------`);
     console.log(`API Gateway is running on port ${port}`);
     console.log(`Auth Service: http://auth-service`);
-    console.log(`Product Service: http://product-service`);
-    console.log(` Order Service: http://order-service`);
+    console.log(`Product Service: http://product-services`);
+    console.log(` Order Service: http://order-services`);
     console.log(`-----------------------------------------------`);
 });
