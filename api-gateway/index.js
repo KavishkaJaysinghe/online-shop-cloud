@@ -12,7 +12,7 @@ proxy.on('error', (err, req, res) => {
 
 // Route requests to the Auth Service
 app.use("/auth", (req, res) => {
-    // 'auth-service' must match the name you gave the Container App in Azure
+    // 'auth-service' must match the name you gave the Container App in Azure change for triggering locally
     req.url = req.url.replace(/^\//, '');
     proxy.web(req, res, { target: "http://auth-service" });
 });
