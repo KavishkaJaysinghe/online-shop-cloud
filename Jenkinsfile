@@ -19,7 +19,7 @@ pipeline {
         stage('Build & Push to Azure') {
             steps {
                 script {
-                    def services = ['auth', 'order', 'product', 'api-gateway']
+                    def services = ['auth', 'order', 'product', 'api-gateway', 'frontend']
                     
                     withCredentials([usernamePassword(credentialsId: "${AZURE_CRED_ID}", passwordVariable: 'ACR_PASS', usernameVariable: 'ACR_USER')]) {
                         // Log in to ACR
