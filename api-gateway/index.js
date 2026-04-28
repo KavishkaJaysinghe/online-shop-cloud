@@ -13,16 +13,19 @@ proxy.on('error', (err, req, res) => {
 // Route requests to the Auth Service
 app.use("/auth", (req, res) => {
     // 'auth-service' must match the name you gave the Container App in Azure
+    req.url = req.url.replace(/^\//, '');
     proxy.web(req, res, { target: "http://auth-service" });
 });
 
 // Route requests to the Product Service changes
 app.use("/products", (req, res) => {
+    req.url = req.url.replace(/^\//, '');
     proxy.web(req, res, { target: "http://product-services" });
 });
 
 // Route requests to the Order Service
 app.use("/orders", (req, res) => {
+    req.url = req.url.replace(/^\//, '');
     proxy.web(req, res, { target: "http://order-services" });
 });
 
