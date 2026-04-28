@@ -16,7 +16,7 @@ app.use("/auth", (req, res) => {
     proxy.web(req, res, { target: "http://auth-service" });
 });
 
-// Route requests to the Product Service
+// Route requests to the Product Service changes
 app.use("/products", (req, res) => {
     proxy.web(req, res, { target: "http://product-services" });
 });
